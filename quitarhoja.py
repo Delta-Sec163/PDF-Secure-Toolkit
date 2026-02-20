@@ -377,21 +377,46 @@ def aplicar_firma_autografa(pdf_path, firma_path):
         return True, output_path
     except Exception as e:
         return False, str(e)
-def firmar_con_selector():
-    # 1. Seleccionamos el archivo de la firma
-    ruta_firma_img = filedialog.askopenfilename(
-        title="Selecciona la imagen de tu firma (PNG)",
-        filetypes=[("Archivos de imagen", "*.png *.jpg *.jpeg")]
-    )
-    
-    if ruta_firma_img:
-        # 2. Si seleccionaste algo, llamamos a la lógica que ya escribiste
-        exito, mensaje = aplicar_firma_autografa(ruta_pdf_seleccionado, ruta_firma_img)
+import fitz  # Debe estar aquí para que el programa reconozca las funciones de PDF
+
+def insertar_firma_en_pdf(pdf_entrada, ruta_imagen, pdf_salida, x, y):
+    try:
+        doc = fitz.open(pdf_entrada)
+        pagina = doc[-1] 
+        # Ahora usamos 'x' e 'y' en lugar de números fijos
+        rect = fitz.Rect(x, y, x + 150, y + 100) 
+        pagina.insert_image(rect, filename=ruta_imagen)
+        doc.save(pdf_salida)
+        doc.close()
+        return True
+    except Exception as e:
+        print(f"Error técnico al firmar: {e}")
+        return False
         
-        if exito:
-            messagebox.showinfo("Sistema Delta", f"¡Firmado con éxito!\nArchivo guardado como: {mensaje}")
-        else:
-            messagebox.showerror("Error Delta", f"No se pudo firmar: {mensaje}")
+def firmar_con_selector():
+    # 1. Leer coordenadas de la interfaz
+    try:
+        x_val = int(ent_x.get())
+        y_val = int(ent_y.get())
+    except:
+        messagebox.showerror("Error", "Ingresa números válidos en X e Y")
+        return
+
+    # 2. Seleccionar archivos
+    archivo_pdf = filedialog.askopenfilename(title="PDF a firmar", filetypes=[("PDF", "*.pdf")])
+    if not archivo_pdf: return
+
+    ruta_firma = filedialog.askopenfilename(title="Firma PNG", filetypes=[("PNG", "*.png")])
+    if not ruta_firma: return
+
+    # --- AQUÍ ES DONDE SE DEFINE 'salida' ---
+    # Asegúrate de que esta línea esté escrita correctamente
+    salida = filedialog.asksaveasfilename(defaultextension=".pdf", title="Guardar como...")
+    
+    # 3. Procesar si 'salida' existe
+    if salida:  # Esta es la línea 407 que te marcaba el error
+        if insertar_firma_en_pdf(archivo_pdf, ruta_firma, salida, x_val, y_val):
+            messagebox.showinfo("Éxito", f"Firmado en X:{x_val} Y:{y_val}")
 
 def abrir_manual():
     # Crea la ventana del manual
@@ -416,6 +441,16 @@ def abrir_manual():
 1. GESTIÓN:
    • FIRMAR PDF: Selecciona una imagen PNG (con fondo 
      transparente) para estampar tu firma autógrafa.
+     # ==========================================================
+# GUÍA DE COORDENADAS PARA LA FIRMA (Hoja Carta 612x792)
+# ----------------------------------------------------------
+# - Superior Izquierda: X=50,  Y=50
+# - Superior Derecha:   X=450, Y=50
+# - Centro Total:       X=230, Y=350
+# - Abajo al Centro:    X=230, Y=650  <-- (Ideal para firmas)
+# - Abajo a la Derecha: X=450, Y=700
+# ==========================================================
+
    • UNIR PDFs: Selecciona varios archivos para crear uno solo.
    • ROTAR PÁGS: Cambia la orientación de hojas específicas.
 
@@ -477,27 +512,47 @@ entry_pagina = tk.Entry(root, width=10, bg=COLOR_ENTRADA, fg=COLOR_TEXTO); entry
 tk.Button(root, text="LIMPIAR PDF (BORRAR PÁGINAS)", command=procesar_pdf, bg=COLOR_BOTON_VERDE, fg="white", width=40).pack(pady=10)
 
 f_tools = tk.Frame(root, bg=COLOR_FONDO); f_tools.pack(pady=10)
+# Panel de Coordenadas para la Firma
+f_pos = tk.Frame(f_tools, bg=COLOR_FONDO)
+f_pos.grid(row=3, column=0, columnspan=2, pady=5)
+# Cuadros de texto para X e Y
+tk.Label(f_pos, text="Posición X:", bg=COLOR_FONDO, fg="white").pack(side="left")
+ent_x = tk.Entry(f_pos, width=5)
+ent_x.insert(0, "400") # Valor por defecto
+ent_x.pack(side="left", padx=5)
 
+tk.Label(f_pos, text="Y:", bg=COLOR_FONDO, fg="white").pack(side="left")
+ent_y = tk.Entry(f_pos, width=5)
+ent_y.insert(0, "700") # Valor por defecto
+ent_y.pack(side="left", padx=5)
+
+lbl_tip = tk.Label(f_tools, 
+                       text="Tip: Para firma centrada abajo usa X:230, Y:650", 
+                       bg=COLOR_FONDO, fg="#888888", font=("Arial", 8, "italic"))
+lbl_tip.grid(row=4, column=0, columnspan=2)
+
+tk.Button(f_tools, text="✍️ FIRMAR PDF", command=firmar_con_selector, 
+              width=43, bg=COLOR_BOTON_AZUL, fg="white").grid(row=5, column=0, columnspan=2, pady=5)
 # Categorías
-tk.Label(f_tools, text="GESTIÓN", bg=COLOR_FONDO, fg="#888888").grid(row=0, column=0, columnspan=2)
-tk.Button(f_tools, text="UNIR PDFs", command=unir_pdfs, width=20, bg=COLOR_BOTON_AZUL, fg="white").grid(row=1, column=0, padx=5, pady=2)
-tk.Button(f_tools, text="IMG A PDF", command=imagenes_a_pdf, width=20, bg=COLOR_BOTON_AZUL, fg="white").grid(row=1, column=1, padx=5, pady=2)
-tk.Button(f_tools, text="ROTAR PÁGS", command=rotar_paginas_selectivo, width=20, bg=COLOR_BOTON_AZUL, fg="white").grid(row=2, column=0, padx=5, pady=2)
-tk.Button(f_tools, text="EXTRAER TXT", command=extraer_texto, width=20, bg=COLOR_BOTON_AZUL, fg="white").grid(row=2, column=1, padx=5, pady=2)
-tk.Button(f_tools, text="✍️ FIRMAR PDF", command=firmar_con_selector, width=43, bg=COLOR_BOTON_AZUL, fg="white").grid(row=3, column=0, columnspan=2, padx=5, pady=2)
-tk.Label(f_tools, text="ANÁLISIS FORENSE", bg=COLOR_FONDO, fg="#888888").grid(row=4, column=0, columnspan=2, pady=10)
-tk.Button(f_tools, text="EXTRAER IMÁGENES", command=extraer_imagenes_pdf, width=20, bg=COLOR_BOTON_NARANJA, fg="white").grid(row=5, column=0, padx=5, pady=2)
-tk.Button(f_tools, text="BUSCAR PATRONES", command=buscar_patrones, width=20, bg=COLOR_BOTON_NARANJA, fg="white").grid(row=5, column=1, padx=5, pady=2)
-tk.Button(f_tools, text="VER METADATOS", command=ver_metadatos, width=20, bg=COLOR_BOTON_NARANJA, fg="white").grid(row=6, column=0, padx=5, pady=2)
-tk.Button(f_tools, text="MARCA AGUA", command=marca_agua, width=20, bg=COLOR_BOTON_NARANJA, fg="white").grid(row=6, column=1, padx=5, pady=2)
+tk.Label(f_tools, text="GESTIÓN", bg=COLOR_FONDO, fg="#888888").grid(row=6, column=0, columnspan=2)
+tk.Button(f_tools, text="UNIR PDFs", command=unir_pdfs, width=20, bg=COLOR_BOTON_AZUL, fg="white").grid(row=7, column=0, padx=5, pady=2)
+tk.Button(f_tools, text="IMG A PDF", command=imagenes_a_pdf, width=20, bg=COLOR_BOTON_AZUL, fg="white").grid(row=7, column=1, padx=5, pady=2)
+tk.Button(f_tools, text="ROTAR PÁGS", command=rotar_paginas_selectivo, width=20, bg=COLOR_BOTON_AZUL, fg="white").grid(row=8, column=0, padx=5, pady=2)
+tk.Button(f_tools, text="EXTRAER TXT", command=extraer_texto, width=20, bg=COLOR_BOTON_AZUL, fg="white").grid(row=8, column=1, padx=5, pady=2)
+# Panel de Coordenadas para la Firma
+tk.Label(f_tools, text="ANÁLISIS FORENSE", bg=COLOR_FONDO, fg="#888888").grid(row=10, column=0, columnspan=2, pady=10)
+tk.Button(f_tools, text="EXTRAER IMÁGENES", command=extraer_imagenes_pdf, width=20, bg=COLOR_BOTON_NARANJA, fg="white").grid(row=11, column=0, padx=5, pady=2)
+tk.Button(f_tools, text="BUSCAR PATRONES", command=buscar_patrones, width=20, bg=COLOR_BOTON_NARANJA, fg="white").grid(row=11, column=1, padx=5, pady=2)
+tk.Button(f_tools, text="VER METADATOS", command=ver_metadatos, width=20, bg=COLOR_BOTON_NARANJA, fg="white").grid(row=12, column=0, padx=5, pady=2)
+tk.Button(f_tools, text="MARCA AGUA", command=marca_agua, width=20, bg=COLOR_BOTON_NARANJA, fg="white").grid(row=12, column=1, padx=5, pady=2)
 
-tk.Label(f_tools, text="SEGURIDAD", bg=COLOR_FONDO, fg="#888888").grid(row=7, column=0, columnspan=2, pady=10)
-tk.Button(f_tools, text="MODO SANITIZE", command=sanitizar_pdf, width=43, bg=COLOR_BOTON_MORADO, fg="white").grid(row=8, column=0, columnspan=2, pady=2)
-tk.Button(f_tools, text="CIFRAR", command=cifrar_pdf, width=20, bg=COLOR_BOTON_ROJO, fg="white").grid(row=9, column=0, padx=5, pady=2)
-tk.Button(f_tools, text="DESBLOQUEAR", command=desbloquear_pdf, width=20, bg=COLOR_BOTON_ROJO, fg="white").grid(row=9, column=1, padx=5, pady=2)
+tk.Label(f_tools, text="SEGURIDAD", bg=COLOR_FONDO, fg="#888888").grid(row=13, column=0, columnspan=2, pady=10)
+tk.Button(f_tools, text="MODO SANITIZE", command=sanitizar_pdf, width=43, bg=COLOR_BOTON_MORADO, fg="white").grid(row=14, column=0, columnspan=2, pady=2)
+tk.Button(f_tools, text="CIFRAR", command=cifrar_pdf, width=20, bg=COLOR_BOTON_ROJO, fg="white").grid(row=15, column=0, padx=5, pady=2)
+tk.Button(f_tools, text="DESBLOQUEAR", command=desbloquear_pdf, width=20, bg=COLOR_BOTON_ROJO, fg="white").grid(row=15, column=1, padx=5, pady=2)
 
-tk.Label(f_tools, text="AYUDA Y SOPORTE", bg=COLOR_FONDO, fg="#888888").grid(row=10, column=0, columnspan=2, pady=10)
-tk.Button(f_tools, text="📖 MANUAL DE USUARIO", command=abrir_manual, width=43, bg=COLOR_BOTON_AZUL, fg="white").grid(row=11, column=0, columnspan=2, pady=5)
+tk.Label(f_tools, text="AYUDA Y SOPORTE", bg=COLOR_FONDO, fg="#888888").grid(row=16, column=0, columnspan=2, pady=10)
+tk.Button(f_tools, text="📖 MANUAL DE USUARIO", command=abrir_manual, width=43, bg=COLOR_BOTON_AZUL, fg="white").grid(row=17, column=0, columnspan=2, pady=5)
 # --- PIE DE PÁGINA (CRÉDITOS) ---
 tk.Label(root, text="---------------------------------------------------", bg=COLOR_FONDO, fg="#333333").pack()
 tk.Label(root, text="Desarrollado por Delta ///", font=("Arial", 8, "italic"), bg=COLOR_FONDO, fg="#888888").pack(pady=15)

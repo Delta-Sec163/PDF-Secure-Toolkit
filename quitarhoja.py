@@ -356,6 +356,43 @@ def marca_agua():
             w_w.destroy(); messagebox.showinfo("OK", "Marca de agua aplicada.")
         except: pass
 
+def aplicar_firma_autografa(pdf_path, firma_path):
+    try:
+        # Abrimos el PDF
+        doc = fitz.open(pdf_path)
+        # Seleccionamos la última página (donde normalmente va la firma)
+        pagina = doc[-1]
+        
+        # Definimos el área (ajusta estos números si quieres que sea más grande o pequeña)
+        # Rect(x0, y0, x1, y1)
+        area_firma = fitz.Rect(400, 650, 550, 750) 
+        
+        # Insertamos la imagen con fondo transparente
+        pagina.insert_image(area_firma, filename=firma_path)
+        
+        # Guardamos con un nombre nuevo para no sobreescribir el original
+        output_path = pdf_path.replace(".pdf", "_firmado.pdf")
+        doc.save(output_path)
+        doc.close()
+        return True, output_path
+    except Exception as e:
+        return False, str(e)
+def firmar_con_selector():
+    # 1. Seleccionamos el archivo de la firma
+    ruta_firma_img = filedialog.askopenfilename(
+        title="Selecciona la imagen de tu firma (PNG)",
+        filetypes=[("Archivos de imagen", "*.png *.jpg *.jpeg")]
+    )
+    
+    if ruta_firma_img:
+        # 2. Si seleccionaste algo, llamamos a la lógica que ya escribiste
+        exito, mensaje = aplicar_firma_autografa(ruta_pdf_seleccionado, ruta_firma_img)
+        
+        if exito:
+            messagebox.showinfo("Sistema Delta", f"¡Firmado con éxito!\nArchivo guardado como: {mensaje}")
+        else:
+            messagebox.showerror("Error Delta", f"No se pudo firmar: {mensaje}")
+
 def abrir_manual():
     w_w = tk.Toplevel(root) 
     w_w.title("Manual de Usuario")
@@ -434,7 +471,7 @@ tk.Button(f_tools, text="UNIR PDFs", command=unir_pdfs, width=20, bg=COLOR_BOTON
 tk.Button(f_tools, text="IMG A PDF", command=imagenes_a_pdf, width=20, bg=COLOR_BOTON_AZUL, fg="white").grid(row=1, column=1, padx=5, pady=2)
 tk.Button(f_tools, text="ROTAR PÁGS", command=rotar_paginas_selectivo, width=20, bg=COLOR_BOTON_AZUL, fg="white").grid(row=2, column=0, padx=5, pady=2)
 tk.Button(f_tools, text="EXTRAER TXT", command=extraer_texto, width=20, bg=COLOR_BOTON_AZUL, fg="white").grid(row=2, column=1, padx=5, pady=2)
-
+tk.Button(f_tools, text="✍️ FIRMAR PDF", command=firmar_con_selector, width=43, bg=COLOR_BOTON_AZUL, fg="white").grid(row=3, column=0, columnspan=2, padx=5, pady=2)
 tk.Label(f_tools, text="ANÁLISIS FORENSE", bg=COLOR_FONDO, fg="#888888").grid(row=3, column=0, columnspan=2, pady=10)
 tk.Button(f_tools, text="EXTRAER IMÁGENES", command=extraer_imagenes_pdf, width=20, bg=COLOR_BOTON_NARANJA, fg="white").grid(row=4, column=0, padx=5, pady=2)
 tk.Button(f_tools, text="BUSCAR PATRONES", command=buscar_patrones, width=20, bg=COLOR_BOTON_NARANJA, fg="white").grid(row=4, column=1, padx=5, pady=2)

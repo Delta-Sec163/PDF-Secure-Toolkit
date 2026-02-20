@@ -394,35 +394,48 @@ def firmar_con_selector():
             messagebox.showerror("Error Delta", f"No se pudo firmar: {mensaje}")
 
 def abrir_manual():
-    w_w = tk.Toplevel(root) 
-    w_w.title("Manual de Usuario")
-    w_w.geometry("400x300")
-    w_w.configure(bg=COLOR_FONDO)
-    tk.Button(w_w, text="Aplicar", command=ap).pack(pady=10)
+    # Crea la ventana del manual
+    ventana_manual = tk.Toplevel(root)
+    ventana_manual.title("Manual de Usuario - PDF Secure Toolkit")
+    ventana_manual.geometry("600x400")
+    ventana_manual.configure(bg="#2c3e50") # Color oscuro de fondo
 
-    texto_manual = """
-🛡️ MANUAL DE USUARIO - PDF SECURE TOOLKIT v8.2
+    # CREAR EL ÁREA DE TEXTO (IMPORTANTE EL COLOR 'fg')
+    texto_manual = tk.Text(ventana_manual, 
+                           bg="#2c3e50", 
+                           fg="white",  # <--- ESTO ASEGURA QUE SE VEA LA LETRA
+                           font=("Consolas", 10), 
+                           padx=20, 
+                           pady=20)
 
-GESTIÓN:
-• LIMPIAR PDF: Elimina páginas específicas. Usa rangos (1-3) o comas (1,4).
-• UNIR PDFs: Selecciona varios archivos para crear uno solo.
-• IMG A PDF: Convierte tus fotos (JPG/PNG) en un documento PDF.
-• ROTAR PÁGS: Gira páginas específicas (90, 180, 270 grados).
-• EXTRAER TXT: Saca todo el texto del PDF y lo guarda en un .txt.
+    contenido = """
+==========================================
+    PDF SECURE TOOLKIT - MANUAL DE USUARIO
+==========================================
 
-ANÁLISIS FORENSE:
-• EXTRAER IMÁGENES: Busca y guarda todas las fotos ocultas en el PDF.
-• BUSCAR PATRONES: Escanea correos e IPs (útil para detectar fugas de datos).
-• VER METADATOS: Muestra la información oculta (autor, fecha, software).
-• MARCA AGUA: Agrega un texto de seguridad en el fondo de las páginas.
+1. GESTIÓN:
+   • FIRMAR PDF: Selecciona una imagen PNG (con fondo 
+     transparente) para estampar tu firma autógrafa.
+   • UNIR PDFs: Selecciona varios archivos para crear uno solo.
+   • ROTAR PÁGS: Cambia la orientación de hojas específicas.
 
-SEGURIDAD:
-• MODO SANITIZE: Limpia metadatos y scripts para envío seguro.
-• CIFRAR: Protege tu PDF con una contraseña de grado militar.
-• DESBLOQUEAR: Elimina la contraseña de un PDF (necesitas la clave actual).
+2. ANÁLISIS FORENSE:
+   • VER METADATOS: Revisa la información oculta del archivo.
+   • BUSCAR PATRONES: Localiza datos sensibles (emails, etc).
 
-📁 NOTA: Todos los archivos se guardan en la carpeta 'PDF_Resultados'.
-    """
+3. SEGURIDAD:
+   • CIFRAR: Protege tus documentos con contraseña.
+   • MODO SANITIZE: Limpia rastros de edición del PDF.
+
+------------------------------------------
+Desarrollado por Delta /// - v1.1.2
+==========================================
+"""
+    
+    texto_manual.insert(tk.END, contenido)
+    texto_manual.config(state=tk.DISABLED) # Para que no lo puedan editar
+    texto_manual.pack(expand=True, fill="both")
+    
     
     cuadro_texto = scrolledtext.ScrolledText(ventana_manual, wrap=tk.WORD, bg=COLOR_ENTRADA, fg=COLOR_TEXTO, font=("Consolas", 10))
     cuadro_texto.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
@@ -472,19 +485,19 @@ tk.Button(f_tools, text="IMG A PDF", command=imagenes_a_pdf, width=20, bg=COLOR_
 tk.Button(f_tools, text="ROTAR PÁGS", command=rotar_paginas_selectivo, width=20, bg=COLOR_BOTON_AZUL, fg="white").grid(row=2, column=0, padx=5, pady=2)
 tk.Button(f_tools, text="EXTRAER TXT", command=extraer_texto, width=20, bg=COLOR_BOTON_AZUL, fg="white").grid(row=2, column=1, padx=5, pady=2)
 tk.Button(f_tools, text="✍️ FIRMAR PDF", command=firmar_con_selector, width=43, bg=COLOR_BOTON_AZUL, fg="white").grid(row=3, column=0, columnspan=2, padx=5, pady=2)
-tk.Label(f_tools, text="ANÁLISIS FORENSE", bg=COLOR_FONDO, fg="#888888").grid(row=3, column=0, columnspan=2, pady=10)
-tk.Button(f_tools, text="EXTRAER IMÁGENES", command=extraer_imagenes_pdf, width=20, bg=COLOR_BOTON_NARANJA, fg="white").grid(row=4, column=0, padx=5, pady=2)
-tk.Button(f_tools, text="BUSCAR PATRONES", command=buscar_patrones, width=20, bg=COLOR_BOTON_NARANJA, fg="white").grid(row=4, column=1, padx=5, pady=2)
-tk.Button(f_tools, text="VER METADATOS", command=ver_metadatos, width=20, bg=COLOR_BOTON_NARANJA, fg="white").grid(row=5, column=0, padx=5, pady=2)
-tk.Button(f_tools, text="MARCA AGUA", command=marca_agua, width=20, bg=COLOR_BOTON_NARANJA, fg="white").grid(row=5, column=1, padx=5, pady=2)
+tk.Label(f_tools, text="ANÁLISIS FORENSE", bg=COLOR_FONDO, fg="#888888").grid(row=4, column=0, columnspan=2, pady=10)
+tk.Button(f_tools, text="EXTRAER IMÁGENES", command=extraer_imagenes_pdf, width=20, bg=COLOR_BOTON_NARANJA, fg="white").grid(row=5, column=0, padx=5, pady=2)
+tk.Button(f_tools, text="BUSCAR PATRONES", command=buscar_patrones, width=20, bg=COLOR_BOTON_NARANJA, fg="white").grid(row=5, column=1, padx=5, pady=2)
+tk.Button(f_tools, text="VER METADATOS", command=ver_metadatos, width=20, bg=COLOR_BOTON_NARANJA, fg="white").grid(row=6, column=0, padx=5, pady=2)
+tk.Button(f_tools, text="MARCA AGUA", command=marca_agua, width=20, bg=COLOR_BOTON_NARANJA, fg="white").grid(row=6, column=1, padx=5, pady=2)
 
-tk.Label(f_tools, text="SEGURIDAD", bg=COLOR_FONDO, fg="#888888").grid(row=6, column=0, columnspan=2, pady=10)
-tk.Button(f_tools, text="MODO SANITIZE", command=sanitizar_pdf, width=43, bg=COLOR_BOTON_MORADO, fg="white").grid(row=7, column=0, columnspan=2, pady=2)
-tk.Button(f_tools, text="CIFRAR", command=cifrar_pdf, width=20, bg=COLOR_BOTON_ROJO, fg="white").grid(row=8, column=0, padx=5, pady=2)
-tk.Button(f_tools, text="DESBLOQUEAR", command=desbloquear_pdf, width=20, bg=COLOR_BOTON_ROJO, fg="white").grid(row=8, column=1, padx=5, pady=2)
+tk.Label(f_tools, text="SEGURIDAD", bg=COLOR_FONDO, fg="#888888").grid(row=7, column=0, columnspan=2, pady=10)
+tk.Button(f_tools, text="MODO SANITIZE", command=sanitizar_pdf, width=43, bg=COLOR_BOTON_MORADO, fg="white").grid(row=8, column=0, columnspan=2, pady=2)
+tk.Button(f_tools, text="CIFRAR", command=cifrar_pdf, width=20, bg=COLOR_BOTON_ROJO, fg="white").grid(row=9, column=0, padx=5, pady=2)
+tk.Button(f_tools, text="DESBLOQUEAR", command=desbloquear_pdf, width=20, bg=COLOR_BOTON_ROJO, fg="white").grid(row=9, column=1, padx=5, pady=2)
 
-tk.Label(f_tools, text="AYUDA Y SOPORTE", bg=COLOR_FONDO, fg="#888888").grid(row=9, column=0, columnspan=2, pady=10)
-tk.Button(f_tools, text="📖 MANUAL DE USUARIO", command=abrir_manual, width=43, bg=COLOR_BOTON_AZUL, fg="white").grid(row=10, column=0, columnspan=2, pady=5)
+tk.Label(f_tools, text="AYUDA Y SOPORTE", bg=COLOR_FONDO, fg="#888888").grid(row=10, column=0, columnspan=2, pady=10)
+tk.Button(f_tools, text="📖 MANUAL DE USUARIO", command=abrir_manual, width=43, bg=COLOR_BOTON_AZUL, fg="white").grid(row=11, column=0, columnspan=2, pady=5)
 # --- PIE DE PÁGINA (CRÉDITOS) ---
 tk.Label(root, text="---------------------------------------------------", bg=COLOR_FONDO, fg="#333333").pack()
 tk.Label(root, text="Desarrollado por Delta ///", font=("Arial", 8, "italic"), bg=COLOR_FONDO, fg="#888888").pack(pady=15)
